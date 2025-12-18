@@ -1,16 +1,12 @@
 <!DOCTYPE html>
 <html lang="es" class="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>El Pastillero Inteligente</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: #000; color: #67e8f9; min-height: 100vh; overflow-x: hidden;
-      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background: #000; color: #67e8f9; min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
     .container { max-width: 1152px; margin: 0 auto; padding: 0 1rem; width: 100%; }
     .topbar { position: sticky; top: 0; z-index: 40; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid #155e75; -webkit-backdrop-filter: blur(10px); }
     .topbar-content { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; max-width: 1152px; margin: 0 auto; }
@@ -39,6 +35,10 @@
     .btn-primary:hover { background: #22d3ee; }
     .btn-secondary { background: transparent; color: #67e8f9; border: 1px solid #155e75; }
     .btn-secondary:hover { background: rgba(6,182,212,0.1); }
+    .btn-danger { background: #d72626; color: #fff; box-shadow: 0 10px 30px rgba(215,38,38,0.35); }
+    .btn-danger:hover { background: #b51f1f; }
+    .btn-outline { background: transparent; color: #4338ca; border: 1px solid #4338ca; box-shadow: 0 10px 30px rgba(67,56,202,0.1); }
+    .btn-outline:hover { background: rgba(67,56,202,0.08); }
     input, select, textarea { width: 100%; padding: 0.5rem 0.75rem; border-radius: 0.75rem; border: 1px solid #155e75; background: #000; color: #e0f2fe; font-size: 0.875rem; outline: none; }
     input:focus, select:focus, textarea:focus { border-color: #06b6d4; box-shadow: 0 0 0 3px rgba(6,182,212,0.1); }
     input::placeholder, textarea::placeholder { color: #164e63; }
@@ -55,6 +55,7 @@
     .grid { display: grid; gap: 1rem; width: 100%; }
     .grid-2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
     .grid-3 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+    .grid-1 { grid-template-columns: 1fr; }
     .boton-vida { width: 11rem; height: 11rem; border-radius: 50%; background: #06b6d4; color: #000; border: none; cursor: pointer; position: relative; box-shadow: 0 20px 60px rgba(34,211,238,0.35); transition: transform 0.2s; }
     .boton-vida:hover { transform: scale(1.05); }
     .boton-vida-content { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
@@ -75,6 +76,7 @@
     .gap-2 { gap: 0.5rem; }
     .gap-3 { gap: 0.75rem; }
     .mt-2 { margin-top: 0.5rem; }
+    .mt-3 { margin-top: 0.75rem; }
     .mt-4 { margin-top: 1rem; }
     .mb-4 { margin-bottom: 1rem; }
     .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
@@ -85,14 +87,19 @@
     .text-lg { font-size: 1.125rem; }
     .text-2xl { font-size: 1.5rem; }
     .text-cyan-200 { color: #e0f2fe; }
+    .text-cyan-300 { color: #67e8f9; }
     .text-cyan-400 { color: #22d3ee; }
     .text-red-400 { color: #f87171; }
-    .cursor-pointer { cursor: pointer; }
-    .w-full { width: 100%; }
+    .text-slate-200 { color: #e2e8f0; }
+    .card-soft { background: #0b1220; border-radius: 0.75rem; padding: 0.75rem 1rem; border: 1px solid #dbeafe; color: #0f172a; }
+    .card-soft-title { color: #1d4ed8; font-weight: 700; }
+    .badge { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.75rem; background: rgba(6,182,212,0.12); color: #e0f2fe; border: 1px solid rgba(6,182,212,0.25); }
     @media (max-width: 768px) {
       .nav { display: none; }
       .mobile-menu-btn { display: block; }
       .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .boton-vida { width: 9rem; height: 9rem; }
+      .boton-vida-icon { font-size: 2.5rem; }
       .modal { max-width: 100%; margin: 0; }
       .flex-col-mobile { flex-direction: column; align-items: stretch !important; }
       .flex-col-mobile > * { width: 100%; }
@@ -142,20 +149,26 @@
     const STORAGE_KEY = 'pastillero_dark_v2';
     const SETTINGS_KEY = 'pastillero_settings_v2';
     const TABS = ['Inicio', 'Pacientes', 'Medicamentos', 'Signos Vitales', 'Agenda Médica', 'Farmacia', 'Ajustes'];
-
     const uid = () => Math.random().toString(36).slice(2, 10);
 
     const initialSeed = {
       sosContact: { nombre: 'Contacto SOS', telefono: '+56911112222', whatsapp: '', relacion: 'Familiar', centro: '', notas: '' },
       patients: [
         { id: uid(), name: 'Ana García', age: 72, sex: 'Femenino', phone: '+56987654321', email: 'ana.garcia@example.com',
-          emergency: { name: 'Hija', phone: '+56911112222', relation: 'Hija', whatsapp: '+56911112222', email: '' },
+          emergency: { name: 'Carlos García', relation: 'Hijo', phone: '+56912345678', whatsapp: '+56912345678', email: 'carlos.garcia@example.com' },
           pathologies: [{ id: uid(), name: 'Hipertensión', date: '2021-05-02' }, { id: uid(), name: 'Diabetes Tipo 2', date: '2020-11-10' }],
-          allergies: ['Penicilina'], diagnoses: [], notes: 'Paciente estable' }
+          allergies: ['Penicilina', 'AINEs'],
+          diagnoses: [], notes: 'Paciente estable' }
       ],
-      meds: [{ id: uid(), name: 'Losartán', dose: '50mg', freq: 'Diario', schedules: ['08:00'], permanent: true, active: true, start: '', end: '', patientId: null }],
-      vitals: [{ id: uid(), patientId: null, datetime: new Date().toISOString(), bpSys: 130, bpDia: 85, hr: 75, rr: 16, temp: 36.8, spo2: 98, hgt: 110, notes: 'Rutina' }],
-      agenda: [{ id: uid(), fecha: new Date().toISOString().slice(0, 10), hora: '10:00', doctor: 'Dra. Valentina Rivas', especialidad: 'Cardiología', consulta: 'Control mensual', direccion: 'Av. Providencia 1234, Santiago', telefono: '+56223456789', observaciones: 'Llevar exámenes' }]
+      meds: [
+        { id: uid(), name: 'Losartán', dose: '50mg', freq: 'Diario', schedules: ['08:00'], permanent: true, active: true, start: '', end: '', patientId: null }
+      ],
+      vitals: [
+        { id: uid(), patientId: null, datetime: new Date().toISOString(), bpSys: 130, bpDia: 85, hr: 75, rr: 16, temp: 36.8, spo2: 98, hgt: 110, notes: 'Rutina' }
+      ],
+      agenda: [
+        { id: uid(), fecha: new Date().toISOString().slice(0,10), hora: '10:00', doctor: 'Dra. Valentina Rivas', especialidad: 'Cardiología', consulta: 'Control mensual', direccion: 'Av. Providencia 1234, Santiago', telefono: '+56223456789', observaciones: 'Llevar exámenes' }
+      ]
     };
 
     const initialSettings = { theme: 'dark', sounds: true, user: { nombre: '', centro: '', medico: '' } };
@@ -164,8 +177,8 @@
     let settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null') || initialSettings;
     let currentTab = 'Inicio';
 
-    function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-    function saveSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+    const saveState = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const saveSettings = () => localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 
     function notify(msg) {
       const toast = document.getElementById('toast');
@@ -178,10 +191,8 @@
       if (!settings.sounds) return;
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine'; osc.frequency.value = 880;
-        gain.gain.value = 0.05;
+        const osc = ctx.createOscillator(); const gain = ctx.createGain();
+        osc.type = 'sine'; osc.frequency.value = 880; gain.gain.value = 0.05;
         osc.connect(gain); gain.connect(ctx.destination);
         osc.start(); setTimeout(() => osc.stop(), 160);
       } catch(e) {}
@@ -192,13 +203,13 @@
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         const osc = ctx.createOscillator(); const gain = ctx.createGain();
-        osc.type = 'sawtooth'; osc.connect(gain); gain.connect(ctx.destination); gain.gain.value = 0.03;
+        osc.type = 'sawtooth'; gain.gain.value = 0.03;
+        osc.connect(gain); gain.connect(ctx.destination);
         const start = ctx.currentTime; osc.start();
         const sweep = () => {
           const t = ctx.currentTime - start;
           osc.frequency.setValueAtTime(600 + 400 * Math.sin(t * 6), ctx.currentTime);
-          if ((ctx.currentTime - start) * 1000 < 900) requestAnimationFrame(sweep);
-          else osc.stop();
+          if ((ctx.currentTime - start) * 1000 < 900) requestAnimationFrame(sweep); else osc.stop();
         };
         sweep();
       } catch(e) {}
@@ -212,26 +223,16 @@
     }
 
     function renderNav() {
-      const nav = document.getElementById('nav');
-      nav.innerHTML = TABS.map(t =>
+      document.getElementById('nav').innerHTML = TABS.map(t =>
         `<button class="nav-btn ${currentTab === t ? 'active' : ''}" onclick="setTab('${t}')">${t}</button>`
       ).join('');
-      const mobileMenuItems = document.getElementById('mobileMenuItems');
-      mobileMenuItems.innerHTML = TABS.map(t =>
+      document.getElementById('mobileMenuItems').innerHTML = TABS.map(t =>
         `<button class="mobile-menu-item ${currentTab === t ? 'active' : ''}" onclick="setTab('${t}'); closeMobileMenu();">${t}</button>`
       ).join('');
     }
 
-    function openMobileMenu() {
-      document.getElementById('mobileMenu').classList.add('open');
-      document.getElementById('mobileMenuOverlay').classList.add('show');
-      document.body.style.overflow = 'hidden';
-    }
-    function closeMobileMenu() {
-      document.getElementById('mobileMenu').classList.remove('open');
-      document.getElementById('mobileMenuOverlay').classList.remove('show');
-      document.body.style.overflow = '';
-    }
+    const openMobileMenu = () => { document.getElementById('mobileMenu').classList.add('open'); document.getElementById('mobileMenuOverlay').classList.add('show'); document.body.style.overflow='hidden'; };
+    const closeMobileMenu = () => { document.getElementById('mobileMenu').classList.remove('open'); document.getElementById('mobileMenuOverlay').classList.remove('show'); document.body.style.overflow=''; };
 
     function setTab(tab) { currentTab = tab; renderNav(); render(); }
 
@@ -246,6 +247,7 @@
       else if (currentTab === 'Ajustes') main.innerHTML = renderAjustes();
     }
 
+    /* -------- HOME -------- */
     function renderHome() {
       const tiles = [
         { label: 'Pacientes', tab: 'Pacientes', icon: '👤' },
@@ -256,20 +258,21 @@
         { label: 'Ajustes', tab: 'Ajustes', icon: '⚙️' }
       ];
       return `
-        <div style="display: flex; flex-direction: column; align-items: center; padding: 2rem 0;">
+        <div style="display:flex; flex-direction:column; align-items:center; padding:2rem 0; gap:1rem;">
           <button class="boton-vida" onclick="activarSOS()">
             <div class="boton-vida-content">
               <div class="boton-vida-icon">🤚</div>
-              <div style="font-weight: 600; font-size: 1.25rem;">Botón de Vida</div>
+              <div style="font-weight:600; font-size:1.25rem;">Botón de Vida</div>
             </div>
           </button>
+          <button class="btn btn-secondary" style="border-radius:999px;" onclick="showMedReminders()">🕑 Ver recordatorio de medicamentos</button>
         </div>
         <div style="max-width: 768px; margin: 0 auto;">
           ${tiles.map(t => `
             <div class="neon-card" style="cursor: pointer;" onclick="setTab('${t.tab}')">
               <div class="flex items-center gap-3">
-                <span style="display: inline-flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: 0.5rem; background: rgba(6,182,212,0.1); font-size: 1.125rem;">${t.icon}</span>
-                <span class="text-cyan-200" style="font-weight: 500;">${t.label}</span>
+                <span style="display:inline-flex; align-items:center; justify-content:center; width:2.25rem; height:2.25rem; border-radius:0.5rem; background: rgba(6,182,212,0.1); font-size:1.125rem;">${t.icon}</span>
+                <span class="text-cyan-200" style="font-weight:500;">${t.label}</span>
               </div>
             </div>
           `).join('')}
@@ -277,56 +280,162 @@
       `;
     }
 
-    function activarSOS() { playSiren(); notify('Emergencia SOS'); showModalSOS(); }
+    /* -------- SOS MODAL -------- */
+    function activarSOS() {
+      playSiren();
+      notify('Emergencia SOS');
+      showSosCallModal();
+    }
 
-    function showModalSOS() {
+    function formatPhone(tel='') { return tel.replace(/[^0-9+]/g,''); }
+
+    function getPatientEmergency(p) {
+      return p?.emergency && (p.emergency.phone || p.emergency.whatsapp || p.emergency.name)
+        ? p.emergency
+        : { name: state.sosContact.nombre, relation: state.sosContact.relacion, phone: state.sosContact.telefono, whatsapp: state.sosContact.whatsapp || state.sosContact.telefono, email: state.sosContact.email || '' };
+    }
+
+    function showSosCallModal() {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay show';
+      const selectOptions = state.patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+      const firstId = state.patients[0]?.id || '';
+      modal.innerHTML = `
+        <div class="neon-card modal" style="background:#0b1220;">
+          <div class="modal-header">
+            <h2 class="text-lg font-bold text-cyan-200">Llamada de Emergencia SOS</h2>
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
+          </div>
+          <div class="modal-body" id="sos-body">
+            <label><span class="label-text">Seleccionar Paciente</span>
+              <select id="sos-patient" onchange="renderSosContactCard()">
+                ${selectOptions}
+              </select>
+            </label>
+            <div id="sos-contact-card" class="mt-3"></div>
+            <div class="mt-3 flex flex-col gap-2">
+              <button class="btn btn-danger" style="width:100%; font-size:1rem; height:3rem; display:flex; align-items:center; justify-content:center; gap:0.5rem;" onclick="callEmergency()">
+                ☎️ LLAMAR A CONTACTO
+              </button>
+              <button class="btn btn-outline" style="width:100%; font-size:1rem; height:3rem; display:flex; align-items:center; justify-content:center; gap:0.5rem;" onclick="openIAAssistant()">
+                🎤 HABLAR CON ASISTENTE IA
+              </button>
+              <button class="btn btn-secondary" style="width:100%; font-size:0.95rem; height:2.75rem;" onclick="showMedReminders()">🕑 Recordatorio de medicamentos</button>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cerrar</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      const sel = modal.querySelector('#sos-patient'); if (firstId) sel.value = firstId;
+      renderSosContactCard();
+    }
+
+    function renderSosContactCard() {
+      const sel = document.getElementById('sos-patient');
+      const pid = sel?.value;
+      const p = state.patients.find(x => x.id === pid);
+      const em = getPatientEmergency(p);
+      const card = document.getElementById('sos-contact-card');
+      card.innerHTML = `
+        <div class="card-soft" style="background:#e8f1ff; color:#0f172a; border-color:#cbd5e1;">
+          <div class="text-sm" style="color:#475569; margin-bottom:0.25rem;">Contacto de Emergencia:</div>
+          <div class="card-soft-title" style="font-size:1.1rem;">${em.name || 'No definido'}</div>
+          <div style="color:#1d4ed8; font-weight:600;">${em.relation || ''}</div>
+          <div style="color:#0f172a; margin-top:0.35rem;">${em.phone || em.whatsapp || 'Sin teléfono'}</div>
+        </div>
+      `;
+    }
+
+    function callEmergency() {
+      const pid = document.getElementById('sos-patient')?.value;
+      const p = state.patients.find(x => x.id === pid);
+      const em = getPatientEmergency(p);
+      const phone = formatPhone(em.phone || em.whatsapp || '');
+      if (phone) window.open(`tel:${phone}`, '_blank');
+      else notify('No hay teléfono disponible');
+    }
+
+    function openIAAssistant() {
+      const pid = document.getElementById('sos-patient')?.value;
+      const p = state.patients.find(x => x.id === pid);
+      const em = getPatientEmergency(p);
+      const meds = state.meds.filter(m => !m.patientId || m.patientId === pid);
+      const agendaNext = state.agenda[0];
+      const medsText = meds.length ? meds.map(m => `• ${m.name} ${m.dose} (${m.freq})${m.schedules.length ? ' a las ' + m.schedules.join(', ') : ''}`).join('\\n') : 'No hay fármacos registrados.';
+      const agendaText = agendaNext ? `Próxima cita: ${agendaNext.fecha} ${agendaNext.hora} con ${agendaNext.doctor} (${agendaNext.especialidad})` : 'Sin citas próximas.';
+      const msg = `Soy tu asistente.\nPaciente: ${p?.name || 'N/D'}\nContacto SOS: ${em.name || 'N/D'} (${em.relation || ''})\nMedicamentos:\n${medsText}\n${agendaText}`;
       const modal = document.createElement('div');
       modal.className = 'modal-overlay show';
       modal.innerHTML = `
         <div class="neon-card modal">
           <div class="modal-header">
-            <h2 class="text-lg font-bold text-cyan-400">🚨 Contacto de Emergencia SOS</h2>
+            <h2 class="text-lg font-bold text-cyan-200">Asistente IA</h2>
             <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
           </div>
           <div class="modal-body">
-            <label><span class="label-text">Nombre de contacto *</span><input id="sos-nombre" value="${state.sosContact.nombre}"></label>
-            <label><span class="label-text">Teléfono *</span><input id="sos-telefono" value="${state.sosContact.telefono}"></label>
-            <label><span class="label-text">WhatsApp (si diferente)</span><input id="sos-whatsapp" value="${state.sosContact.whatsapp}"></label>
-            <label><span class="label-text">Relación</span><input id="sos-relacion" value="${state.sosContact.relacion}"></label>
-            <label><span class="label-text">Centro Médico</span><input id="sos-centro" value="${state.sosContact.centro}"></label>
-            <label><span class="label-text">Observaciones</span><textarea id="sos-notas">${state.sosContact.notas}</textarea></label>
+            <pre style="white-space:pre-wrap; background:rgba(6,182,212,0.05); border:1px solid #155e75; padding:1rem; border-radius:0.75rem; color:#e2e8f0;">${msg}</pre>
+            <p class="text-sm text-cyan-300 mt-3">Puedes llamar al contacto o revisar los horarios de medicamentos.</p>
           </div>
           <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
-            <button class="btn btn-primary" onclick="sendSOS()">Enviar SOS</button>
+            <button class="btn btn-primary" onclick="showMedReminders(); this.closest('.modal-overlay').remove()">Ver recordatorios</button>
+            <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cerrar</button>
           </div>
         </div>
       `;
       document.body.appendChild(modal);
     }
 
-    function sendSOS() {
-      state.sosContact = {
-        nombre: document.getElementById('sos-nombre').value,
-        telefono: document.getElementById('sos-telefono').value,
-        whatsapp: document.getElementById('sos-whatsapp').value || document.getElementById('sos-telefono').value,
-        relacion: document.getElementById('sos-relacion').value,
-        centro: document.getElementById('sos-centro').value,
-        notas: document.getElementById('sos-notas').value
-      };
-      saveState();
-      const msg = encodeURIComponent(`🚨 *Emergencia SOS*\n👤 ${state.sosContact.nombre}\n📞 ${state.sosContact.telefono}\n🤝 Relación: ${state.sosContact.relacion}\n🏥 Centro Médico: ${state.sosContact.centro}\n🗒 ${state.sosContact.notas}`);
-      const link = `https://wa.me/${state.sosContact.whatsapp.replace(/[^0-9]/g, '')}?text=${msg}`;
-      window.open(link, '_blank');
-      playBeep(); notify('SOS enviado');
-      document.querySelector('.modal-overlay').remove();
+    /* -------- MED REMINDERS -------- */
+    function getTodayMedReminders() {
+      const today = new Date().toISOString().slice(0,10);
+      const items = [];
+      state.meds.filter(m => m.active).forEach(m => {
+        (m.schedules || []).forEach(hh => {
+          items.push({ time: hh, med: m.name, dose: m.dose, freq: m.freq });
+        });
+      });
+      return items.sort((a,b) => a.time.localeCompare(b.time));
     }
 
+    function showMedReminders() {
+      const reminders = getTodayMedReminders();
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay show';
+      modal.innerHTML = `
+        <div class="neon-card modal">
+          <div class="modal-header">
+            <h2 class="text-lg font-bold text-cyan-200">Recordatorios de hoy</h2>
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
+          </div>
+          <div class="modal-body">
+            ${reminders.length === 0 ? '<p class="text-cyan-300">No hay horarios cargados.</p>' : ''}
+            ${reminders.map(r => `
+              <div class="neon-card" style="margin-bottom:0.5rem; padding:0.75rem;">
+                <div class="flex justify-between items-center">
+                  <div>
+                    <div class="text-cyan-200 font-bold">${r.med}</div>
+                    <div class="text-sm text-cyan-300">${r.dose} • ${r.freq}</div>
+                  </div>
+                  <div class="badge">⏰ ${r.time}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cerrar</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    /* -------- PATIENTS -------- */
     function renderPatients() {
       return `
-        <button class="btn-back" onclick="setTab('Inicio')">
-          <span>←</span><span>Volver al Inicio</span>
-        </button>
+        <button class="btn-back" onclick="setTab('Inicio')"><span>←</span><span>Volver al Inicio</span></button>
         <div class="flex justify-between items-center mb-4 flex-col-mobile">
           <div class="mb-4">
             <h2 class="text-2xl font-bold text-cyan-200">Gestión de Pacientes</h2>
@@ -339,7 +448,7 @@
             <div class="neon-card">
               <div class="flex justify-between items-center mb-3">
                 <div class="flex items-center gap-3">
-                  <div style="width: 2.5rem; height: 2.5rem; border-radius: 50%; background: rgba(6,182,212,0.1); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">👤</div>
+                  <div style="width:2.5rem; height:2.5rem; border-radius:50%; background: rgba(6,182,212,0.1); display:flex; align-items:center; justify-content:center; font-size:1.25rem;">👤</div>
                   <div>
                     <div class="font-bold text-cyan-200">${p.name}</div>
                     <div class="text-sm text-cyan-400">Edad: ${p.age} • ${p.sex}</div>
@@ -353,12 +462,12 @@
                 <button class="text-red-400 cursor-pointer" onclick="deletePatient('${p.id}')">🗑</button>
               </div>
               ${p.pathologies.length > 0 ? `
-                <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #155e75;">
+                <div style="margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid #155e75;">
                   ${p.pathologies.map(pt => `<span class="pill">${pt.name}</span>`).join('')}
                 </div>
               ` : ''}
               ${p.allergies && p.allergies.length > 0 ? `
-                <div style="margin-top: 0.5rem;">
+                <div style="margin-top:0.5rem;">
                   ${p.allergies.map(a => `<span class="pill" style="background: rgba(248,113,113,0.1); color:#fca5a5;">${a}</span>`).join('')}
                 </div>
               ` : ''}
@@ -378,7 +487,6 @@
             <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
           </div>
           <div class="modal-body">
-
             <h3 class="text-cyan-200 font-bold mb-2">Información Básica</h3>
             <div class="grid grid-3">
               <label><span class="label-text">Nombre Completo *</span><input id="p-name" placeholder="Ej: Juan Pérez"></label>
@@ -413,7 +521,6 @@
               <label><span class="label-text">Patologías (separadas por coma)</span><input id="p-pathologies" placeholder="Ej: Hipertensión, Diabetes Tipo 2"></label>
               <label><span class="label-text">Alergias a medicamentos (separadas por coma)</span><input id="p-allergies" placeholder="Ej: Penicilina, AINEs"></label>
             </div>
-
           </div>
           <div class="modal-footer">
             <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
@@ -425,10 +532,9 @@
     }
 
     function savePatient() {
-      const parseList = (val) => val.split(',').map(s => s.trim()).filter(Boolean);
+      const parseList = val => (val || '').split(',').map(s => s.trim()).filter(Boolean);
       const pathologiesInput = parseList(document.getElementById('p-pathologies').value || '');
       const allergiesInput   = parseList(document.getElementById('p-allergies').value || '');
-
       const patient = {
         id: uid(),
         name: document.getElementById('p-name').value,
@@ -443,25 +549,14 @@
           whatsapp: document.getElementById('p-em-wa').value,
           email: document.getElementById('p-em-email').value
         },
-        pathologies: pathologiesInput.map(name => ({
-          id: uid(),
-          name,
-          date: new Date().toISOString().slice(0, 10)
-        })),
+        pathologies: pathologiesInput.map(name => ({ id: uid(), name, date: new Date().toISOString().slice(0,10) })),
         allergies: allergiesInput,
         diagnoses: [],
         notes: ''
       };
-
-      if (!patient.name || !patient.age || !patient.sex) {
-        notify('Complete los campos requeridos');
-        return;
-      }
-      state.patients.unshift(patient);
-      saveState();
-      document.querySelector('.modal-overlay').remove();
-      render();
-      notify('Paciente agregado');
+      if (!patient.name || !patient.age || !patient.sex) { notify('Complete los campos requeridos'); return; }
+      state.patients.unshift(patient); saveState();
+      document.querySelector('.modal-overlay').remove(); render(); notify('Paciente agregado');
     }
 
     function deletePatient(id) {
@@ -472,29 +567,28 @@
       saveState(); render(); notify('Paciente eliminado');
     }
 
+    /* -------- MEDS -------- */
     function renderMedicines() {
       return `
-        <button class="btn-back" onclick="setTab('Inicio')">
-          <span>←</span><span>Volver al Inicio</span>
-        </button>
+        <button class="btn-back" onclick="setTab('Inicio')"><span>←</span><span>Volver al Inicio</span></button>
         <div class="flex justify-between items-center mb-4 flex-col-mobile">
           <h2 class="text-2xl font-bold text-cyan-200 mb-4">Gestión de Medicamentos</h2>
           <button class="btn btn-primary" onclick="showAddMed()">+ Agregar Fármaco</button>
         </div>
-        <div style="margin-bottom: 1rem;">
+        <div style="margin-bottom:1rem;">
           ${state.meds.map(m => `
             <div class="neon-card flex justify-between items-center">
               <div class="flex items-center gap-3">
-                <div style="width: 2.5rem; height: 2.5rem; border-radius: 50%; background: rgba(6,182,212,0.1); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">💊</div>
+                <div style="width:2.5rem; height:2.5rem; border-radius:50%; background: rgba(6,182,212,0.1); display:flex; align-items:center; justify-content:center; font-size:1.25rem;">💊</div>
                 <div>
                   <div class="font-bold text-cyan-200">${m.name} ${m.dose}</div>
-                  <div class="text-sm text-cyan-400">${m.permanent ? 'Permanente' : m.start + ' — ' + m.end}</div>
-                  <div class="text-sm text-cyan-400">${m.freq} ${m.schedules.length > 0 ? '• ' + m.schedules.join(', ') : ''}</div>
+                  <div class="text-sm text-cyan-400">${m.permanent ? 'Permanente' : (m.start || '—') + ' — ' + (m.end || '—')}</div>
+                  <div class="text-sm text-cyan-400">${m.freq} ${m.schedules.length ? '• ' + m.schedules.join(', ') : ''}</div>
                 </div>
               </div>
               <div class="flex items-center gap-3">
                 <label class="text-sm flex items-center gap-2">
-                  <span style="color: ${m.active ? '#67e8f9' : '#164e63'}">${m.active ? 'Activo' : 'Inactivo'}</span>
+                  <span style="color:${m.active ? '#67e8f9' : '#164e63'}">${m.active ? 'Activo' : 'Inactivo'}</span>
                   <input type="checkbox" ${m.active ? 'checked' : ''} onchange="toggleMed('${m.id}', this.checked)">
                 </label>
                 <button class="text-red-400 cursor-pointer" onclick="deleteMed('${m.id}')">🗑</button>
@@ -526,6 +620,7 @@
                   <option>A demanda</option>
                 </select>
               </label>
+              <label><span class="label-text">Horarios (HH:MM, separados por coma)</span><input id="m-sched" placeholder="08:00, 20:00"></label>
               <label><span class="label-text">Fecha Inicio</span><input type="date" id="m-start"></label>
               <label><span class="label-text">Fecha Término</span><input type="date" id="m-end"></label>
               <label class="flex items-center gap-2 mt-4">
@@ -544,15 +639,16 @@
     }
 
     function saveMed() {
+      const parseTimes = v => (v||'').split(',').map(s=>s.trim()).filter(Boolean);
       const med = {
         id: uid(),
         name: document.getElementById('m-name').value,
         dose: document.getElementById('m-dose').value,
         freq: document.getElementById('m-freq').value,
+        schedules: parseTimes(document.getElementById('m-sched').value),
         start: document.getElementById('m-start').value,
         end: document.getElementById('m-end').value,
         permanent: document.getElementById('m-permanent').checked,
-        schedules: [],
         active: true,
         patientId: null
       };
@@ -561,38 +657,27 @@
       document.querySelector('.modal-overlay').remove(); render(); notify('Medicamento agregado');
     }
 
-    function toggleMed(id, active) {
-      const med = state.meds.find(m => m.id === id);
-      if (med) { med.active = active; saveState(); render(); }
-    }
+    const toggleMed = (id, active) => { const m=state.meds.find(x=>x.id===id); if(m){ m.active=active; saveState(); render(); } };
+    function deleteMed(id) { if (!confirm('¿Eliminar este medicamento?')) return; state.meds = state.meds.filter(m => m.id !== id); saveState(); render(); notify('Medicamento eliminado'); }
 
-    function deleteMed(id) {
-      if (!confirm('¿Eliminar este medicamento?')) return;
-      state.meds = state.meds.filter(m => m.id !== id);
-      saveState(); render(); notify('Medicamento eliminado');
-    }
-
+    /* -------- VITALS -------- */
     function renderVitals() {
       const patientId = state.patients[0]?.id || '';
       const rows = state.vitals.filter(v => !patientId || v.patientId === patientId || v.patientId === null);
       return `
-        <button class="btn-back" onclick="setTab('Inicio')">
-          <span>←</span><span>Volver al Inicio</span>
-        </button>
+        <button class="btn-back" onclick="setTab('Inicio')"><span>←</span><span>Volver al Inicio</span></button>
         <div class="flex justify-between items-center mb-4 flex-col-mobile">
           <h2 class="text-2xl font-bold text-cyan-200 mb-4">Control de Signos Vitales</h2>
           <button class="btn btn-primary" onclick="showAddVital()">+ Agregar Signo Vital</button>
         </div>
         <div class="neon-card">
-          <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+          <div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
             <table>
               <thead>
-                <tr>
-                  <th>Fecha y Hora</th><th>P. Arterial</th><th>F. Cardíaca</th><th>F. Resp.</th><th>Temp.</th><th>Sat. O₂</th><th>HGT</th><th>Observaciones</th><th></th>
-                </tr>
+                <tr><th>Fecha y Hora</th><th>P. Arterial</th><th>F. Cardíaca</th><th>F. Resp.</th><th>Temp.</th><th>Sat. O₂</th><th>HGT</th><th>Observaciones</th><th></th></tr>
               </thead>
               <tbody>
-                ${rows.length === 0 ? '<tr><td colspan="9" class="text-center" style="padding: 2rem;">Sin registros</td></tr>' : ''}
+                ${rows.length===0 ? '<tr><td colspan="9" class="text-center" style="padding:2rem;">Sin registros</td></tr>' : ''}
                 ${rows.map(r => `
                   <tr>
                     <td>${new Date(r.datetime).toLocaleString()}</td>
@@ -602,7 +687,7 @@
                     <td>${r.temp}°C</td>
                     <td>${r.spo2}%</td>
                     <td>${r.hgt}</td>
-                    <td style="max-width: 240px; overflow: hidden; text-overflow: ellipsis;" title="${r.notes}">${r.notes}</td>
+                    <td style="max-width:240px; overflow:hidden; text-overflow:ellipsis;" title="${r.notes}">${r.notes}</td>
                     <td><button class="text-red-400 cursor-pointer" onclick="deleteVital('${r.id}')">🗑</button></td>
                   </tr>
                 `).join('')}
@@ -616,7 +701,7 @@
     function showAddVital() {
       const modal = document.createElement('div');
       modal.className = 'modal-overlay show';
-      const now = new Date().toISOString().slice(0, 16);
+      const now = new Date().toISOString().slice(0,16);
       modal.innerHTML = `
         <div class="neon-card modal">
           <div class="modal-header">
@@ -626,9 +711,7 @@
           <div class="modal-body">
             <div class="grid grid-3">
               <label><span class="label-text">Paciente</span>
-                <select id="v-patient">
-                  ${state.patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
-                </select>
+                <select id="v-patient">${state.patients.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
               </label>
               <label><span class="label-text">Fecha y hora</span><input type="datetime-local" id="v-datetime" value="${now}"></label>
               <div></div>
@@ -669,18 +752,12 @@
       state.vitals.unshift(vital); saveState();
       document.querySelector('.modal-overlay').remove(); render(); notify('Signo vital registrado');
     }
+    function deleteVital(id) { if (!confirm('¿Eliminar este registro?')) return; state.vitals = state.vitals.filter(v => v.id !== id); saveState(); render(); notify('Registro eliminado'); }
 
-    function deleteVital(id) {
-      if (!confirm('¿Eliminar este registro?')) return;
-      state.vitals = state.vitals.filter(v => v.id !== id);
-      saveState(); render(); notify('Registro eliminado');
-    }
-
+    /* -------- AGENDA -------- */
     function renderAgenda() {
       return `
-        <button class="btn-back" onclick="setTab('Inicio')">
-          <span>←</span><span>Volver al Inicio</span>
-        </button>
+        <button class="btn-back" onclick="setTab('Inicio')"><span>←</span><span>Volver al Inicio</span></button>
         <div class="flex justify-between items-center mb-4 flex-col-mobile">
           <h2 class="text-2xl font-bold text-cyan-200 mb-4">Agenda Médica</h2>
           <button class="btn btn-primary" onclick="showAddAgenda()">+ Nueva Cita</button>
@@ -751,20 +828,15 @@
       document.querySelector('.modal-overlay').remove(); render(); notify('Cita agregada');
     }
 
-    function deleteAgenda(id) {
-      if (!confirm('¿Eliminar esta cita?')) return;
-      state.agenda = state.agenda.filter(a => a.id !== id);
-      saveState(); render(); notify('Cita eliminada');
-    }
+    const deleteAgenda = id => { if(!confirm('¿Eliminar esta cita?')) return; state.agenda = state.agenda.filter(a=>a.id!==id); saveState(); render(); notify('Cita eliminada'); };
 
+    /* -------- FARMACIA -------- */
     function renderFarmacia() {
       return `
-        <button class="btn-back" onclick="setTab('Inicio')">
-          <span>←</span><span>Volver al Inicio</span>
-        </button>
-        <div style="text-align: center; padding: 2rem 0;">
+        <button class="btn-back" onclick="setTab('Inicio')"><span>←</span><span>Volver al Inicio</span></button>
+        <div style="text-align:center; padding:2rem 0;">
           <h2 class="text-2xl font-bold text-cyan-200 mb-4">🏪 Buscar Farmacia</h2>
-          <p class="text-cyan-400" style="max-width: 600px; margin: 0 auto 2rem;">Encuentra rápidamente farmacias cercanas o abre el mapa general en Google Maps.</p>
+          <p class="text-cyan-400" style="max-width:600px; margin:0 auto 2rem;">Encuentra rápidamente farmacias cercanas o abre el mapa general en Google Maps.</p>
           <div class="flex flex-col items-center gap-3">
             <button class="btn btn-primary" onclick="buscarFarmacia()">🔍 Buscar Farmacia Cercana</button>
             <button class="btn btn-secondary" onclick="abrirMaps()">🗺️ Ver en Google Maps</button>
@@ -779,8 +851,7 @@
         navigator.geolocation.getCurrentPosition(
           pos => {
             const { latitude, longitude } = pos.coords;
-            const url = `https://www.google.com/maps/search/farmacia+cercana/@${latitude},${longitude},15z`;
-            window.open(url, '_blank');
+            window.open(`https://www.google.com/maps/search/farmacia+cercana/@${latitude},${longitude},15z`, '_blank');
           },
           () => {
             const err = document.getElementById('farmacia-error');
@@ -794,15 +865,13 @@
         err.classList.remove('hidden');
       }
     }
+    const abrirMaps = () => window.open('https://www.google.com/maps/search/farmacia+cercana/', '_blank');
 
-    function abrirMaps() { window.open('https://www.google.com/maps/search/farmacia+cercana/', '_blank'); }
-
+    /* -------- AJUSTES -------- */
     function renderAjustes() {
       return `
-        <button class="btn-back" onclick="setTab('Inicio')">
-          <span>←</span><span>Volver al Inicio</span>
-        </button>
-        <div style="max-width: 768px; margin: 0 auto;">
+        <button class="btn-back" onclick="setTab('Inicio')"><span>←</span><span>Volver al Inicio</span></button>
+        <div style="max-width:768px; margin:0 auto;">
           <h2 class="text-2xl font-bold text-cyan-200 mb-4">⚙️ Ajustes del Sistema</h2>
           <div class="neon-card mb-4">
             <h3 class="font-bold text-cyan-200 mb-3">🎨 Tema visual</h3>
@@ -832,7 +901,7 @@
       `;
     }
 
-    function toggleSounds(checked) { settings.sounds = checked; saveSettings(); }
+    const toggleSounds = checked => { settings.sounds = checked; saveSettings(); };
     function saveUserSettings() {
       settings.user = {
         nombre: document.getElementById('user-nombre').value,
@@ -841,12 +910,9 @@
       };
       saveSettings(); notify('Ajustes guardados');
     }
+    function resetApp() { if (!confirm('¿Restablecer toda la aplicación? Se perderán todos los datos.')) return; localStorage.clear(); window.location.reload(); }
 
-    function resetApp() {
-      if (!confirm('¿Restablecer toda la aplicación? Se perderán todos los datos.')) return;
-      localStorage.clear(); window.location.reload();
-    }
-
+    /* INIT */
     document.documentElement.classList.toggle('dark', settings.theme === 'dark');
     renderNav(); render();
   </script>
